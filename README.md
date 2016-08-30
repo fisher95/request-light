@@ -12,7 +12,9 @@ A light http request library for NodeJS, supporting 'gbk/gb2312' encoding.
 
 It is a simple library drifted by someone amateur like me and please do not use it in the product level.
 
-## How to use:
+---
+
+## Get-Started
 
 ```js
 var Request = require('request');
@@ -32,17 +34,13 @@ Request
     .post('remote-address')
     .config({
         timeout: 6000,
-        encoding: 'gb2312',
-        encoding: {
-            request: 'gb2312',
-            response: 'gb2312'
-        }
-    })
-    .send({
-        someKey: 'some-value'
+        encoding: 'gb2312'
     })
     .headers({
         'User-Agent': 'fisher95.com'
+    })
+    .send({
+        someKey: 'some-value'
     })
     .done(function(err, res){
         if(err)
@@ -51,3 +49,48 @@ Request
         R.log(res.body);
     });
 ```
+
+---
+
+## Init Configure
+
+Configure to initialize the library with global preferences of all your request by ```Request.config(configure);```.
+
+```json
+{
+	debug: true,
+    timeout: 6000,
+    encoding: 'gb2312',
+    host: 'google.com',
+    method: 'GET',
+    path: '/base-path/'
+}
+```
+
+## Request Configure
+
+Configure to specify a single request by ```Request.post(remote-address).config(configure);```
+
+```json
+{
+    timeout: 6000,
+    encoding: 'gb2312',
+    encodings: {
+        request: 'gb2312',
+        response: 'gb2312'
+    }
+}
+```
+
+
+## Callback of request
+
+```js
+function(err, response){
+    console.log(res.headers);
+    console.log(res.body);
+}
+```
+
+
+---
