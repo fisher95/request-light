@@ -1,6 +1,8 @@
-# Light Http Request library
+# request-light | A Light Http Request library for node.js
 
 *Under Development Yet* :)
+
+A Light Http Request library for node.js. (Supporting gbk encoding. :)
 
 ## Attention:
 
