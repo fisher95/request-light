@@ -4,6 +4,15 @@
 
 A Light Http Request library for node.js. (Supporting gbk encoding. :)
 
+## References
+
+Other http request library for node.js.
+
+https://github.com/request/request
+
+https://github.com/Mashape/unirest-nodejs
+
+
 ## Attention:
 
 A light http request library for NodeJS, supporting 'gbk/gb2312' encoding.

@@ -7,11 +7,10 @@
  */
 'use strict';
 
-var H = global.H = {};
-require( './request-init' );
 const http = require( 'http' );
 const url = require( 'url' );
-const querystring = require( 'querystring' );
+const queryString = require( 'querystring' );
+var Utils = require( './request-utils' );
 
 class Request {
 	/**
@@ -22,6 +21,10 @@ class Request {
 	 * @param options.method http request method. [ 'GET' | 'POST' ]
 	 */
 	constructor( options ) {
+		/**
+		 * Options about this request
+		 * @type {{options: {method: ('GET'|'POST'|'DELETE')}, headers: {}, data: string, timeout: number, contentLength: number, encoding: string, encodeURIComponent: null}}
+		 */
 		var configure = {
 			options: {
 				method: options.method || 'GET'
@@ -67,7 +70,8 @@ class Request {
 	 * @param data json data to be query
 	 */
 	query( data ) {
-		data = querystring.stringify( data, null, null
+		this.configure.query = data;
+		data = queryString.stringify( data, null, null
 			, { encodeURIComponent: this.configure.encodeURIComponent } );
 		if (this.configure.options.path.indexOf( '?' ) < 0)
 			this.configure.options.path += '?' + data;
@@ -84,8 +88,8 @@ class Request {
 	 */
 	send( data ) {
 		if ('GET' === this.configure.options.method)
-			H.warning( H.strings.warning_send_body_using_get );
-		data = querystring.stringify( data, null, null
+			Utils.warning( Utils.strings.warning_send_body_using_get );
+		data = queryString.stringify( data, null, null
 			, { encodeURIComponent: this.configure.encodeURIComponent } );
 		this.configure.data = data;
 		this.configure.contentLength = Buffer.byteLength( data );
@@ -135,22 +139,39 @@ class Request {
 				callback( err );
 			} );
 			res.on( 'data', function ( part ) {
-				response.body += H.toUtf8FromEncoding( part, _this.configure.encoding );
+				response.body += Utils.toUtf8FromEncoding( part, _this.configure.encoding );
 			} );
 			res.on( 'end', function () {
+				Utils.log( '-------- start of response ---------' );
+				Utils.log( response );
+				Utils.log( '--------  end of response  ---------' );
 				callback( null, response );
 			} );
 		} );
 		if (this.configure.data)
 			req.write( this.configure.data );
 		req.end();
-		H.log( this.configure );
+		Utils.log( '-------- start of configure ---------' );
+		Utils.log( this.configure );
+		Utils.log( '--------  end of configure  ---------' );
 		return this;
 	}
 }
+/**
+ * Global http header
+ * @type {{User-Agent: string}}
+ */
+Request.sHeaders = {
+	'User-Agent': 'Mozilla/5.0 (Linux;) Chrome'
+};
 
 Request.config = function ( options ) {
-	H.debug = options.debug;
+	if (!options)
+		return;
+	Utils.config( options );
+	if (options.headers)
+		Request.sHeaders = options.headers;
+	// TODO merge object
 };
 /**
  * supported encodings
@@ -169,8 +190,8 @@ Request.EncodeURIComponent = {
 	gbkEncodeURIComponent: function ( origin ) {
 		var encoding = 'gb2312';
 		if (new RegExp( /[^\x00-\xff]/g ).test( origin ))
-			return ( H.urlEncode( origin, encoding ) );
-		return ( querystring.escape( origin ) );
+			return ( Utils.urlEncode( origin, encoding ) );
+		return ( queryString.escape( origin ) );
 	}
 };
 /**
@@ -199,23 +220,4 @@ Request.get = function ( address ) {
 };
 // export class Request
 module.exports = Request;
-
-// Test scripts
-
-
-// var request = Request
-// 	.post( 'http://127.0.0.1:3000/okay-with-it' )
-// 	.headers( {
-// 		'author': 'ap.hello.request-light'
-// 	} )
-// 	.send( {
-// 		someKey: 'some-data',
-// 		chinese: '徐汇奉贤'
-// 	} )
-// 	.done( function ( err, response ) {
-// 		if (err)
-// 			return H.log( err );
-// 		H.log( response );
-// 	} );
-// H.log( request.configure );
 

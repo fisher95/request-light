@@ -4,19 +4,29 @@
  * Scripts to initialize this library
  */
 
-// H means Helper here.
-var H = global.H;
-H.debug = false;
+var debug = false;
 var urlencode = require( 'urlencode' );
 var Iconv = require( "iconv-lite" );
 
 
-H.log = function ( data ) {
-	if (H.debug)
+/**
+ * Configure the log level
+ * @param cfg {Object} options
+ * @param cfg.debug {Boolean} debug mode or not
+ */
+exports.config = function ( cfg ) {
+	if ('debug' in cfg)
+		debug = cfg.debug;
+};
+
+exports.log = function ( data ) {
+	if (debug)
 		console.log( data );
 	return data;
 };
-H.warning = function ( data ) {
+exports.warning = function ( data ) {
+	if (debug)
+		console.log( data );
 	console.warn( data );
 	return data;
 };
@@ -28,7 +38,7 @@ H.warning = function ( data ) {
  * @param encoding  encoding to be used.
  * @return string   decoded string
  */
-H.urlEncode = urlencode.encode;
+exports.urlEncode = urlencode.encode;
 /**
  * encode url
  *
@@ -36,7 +46,7 @@ H.urlEncode = urlencode.encode;
  * @param encoding  encoding to be used.
  * @return string   encoded string
  */
-H.urlDecode = urlencode.decode;
+exports.urlDecode = urlencode.decode;
 
 /**
  * Convert buffer to utf8 string from encoding
@@ -45,10 +55,10 @@ H.urlDecode = urlencode.decode;
  * @param encoding  the origin encoding
  * @returns string  the utf8 encoded string
  */
-H.toUtf8FromEncoding = function ( buffer, encoding ) {
+exports.toUtf8FromEncoding = function ( buffer, encoding ) {
 	return Iconv.decode( buffer, encoding ).toString();
 };
 
-H.strings = {
+exports.strings = {
 	warning_send_body_using_get: 'Warning: It seems that you are using http GET to send data :('
 };
