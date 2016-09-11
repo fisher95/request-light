@@ -5,7 +5,7 @@
  */
 
 var debug = false;
-var urlencode = require( 'urlencode' );
+var urlEncode = require( 'urlencode' );
 var Iconv = require( "iconv-lite" );
 
 
@@ -38,7 +38,7 @@ exports.warning = function ( data ) {
  * @param encoding  encoding to be used.
  * @return string   decoded string
  */
-exports.urlEncode = urlencode.encode;
+exports.urlEncode = urlEncode.encode;
 /**
  * encode url
  *
@@ -46,7 +46,7 @@ exports.urlEncode = urlencode.encode;
  * @param encoding  encoding to be used.
  * @return string   encoded string
  */
-exports.urlDecode = urlencode.decode;
+exports.urlDecode = urlEncode.decode;
 
 /**
  * Convert buffer to utf8 string from encoding
