@@ -65,9 +65,9 @@ Request
 
 Configure to initialize the library with global preferences of all your request by ```Request.config(configure);```.
 
-```json
+```js
 {
-	debug: true,
+    debug: true,
     timeout: 6000,
     encoding: 'gb2312',
     host: 'google.com',
@@ -80,7 +80,7 @@ Configure to initialize the library with global preferences of all your request 
 
 Configure to specify a single request by ```Request.post(remote-address).config(configure);```
 
-```json
+```js
 {
     timeout: 6000,
     encoding: 'gb2312',
