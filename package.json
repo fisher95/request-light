@@ -1,5 +1,5 @@
 {
-  "name": "request-light",
+  "name": "request-light.js",
   "version": "0.8.0",
   "description": "A light-weight http request library.",
   "main": "request-light.js",
