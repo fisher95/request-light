@@ -21,5 +21,10 @@
   "bugs": {
     "url": "https://github.com/fisher95/request-light/issues"
   },
-  "homepage": "https://github.com/fisher95/request-light#readme"
+  "homepage": "https://github.com/fisher95/request-light#readme",
+  "dependencies": {
+    "iconv-lite": "^0.4.13",
+    "querystring": "^0.2.0",
+    "urlencode": "^1.1.0"
+  }
 }
