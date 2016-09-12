@@ -1,4 +1,4 @@
-# request-light | A Light Http Request library for node.js
+# request-light | A Light-Weight Http Request library for node.js
 
 *Under Development Yet* :)
 

@@ -1,0 +1,25 @@
+{
+  "name": "request-light",
+  "version": "0.8.0",
+  "description": "A light-weight http request library.",
+  "main": "request-light.js",
+  "scripts": {
+    "test": "node tests/test-main.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fisher95/request-light.git"
+  },
+  "keywords": [
+    "request",
+    "http",
+    "light-weight",
+    "gbk"
+  ],
+  "author": "Fisher",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/fisher95/request-light/issues"
+  },
+  "homepage": "https://github.com/fisher95/request-light#readme"
+}

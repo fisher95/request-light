@@ -158,8 +158,7 @@ class Request {
 	}
 }
 /**
- * Global http header
- * @type {{User-Agent: string}}
+ * Base http header
  */
 Request.sHeaders = {
 	'User-Agent': 'Mozilla/5.0 (Linux;) Chrome'
