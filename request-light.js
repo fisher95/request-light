@@ -54,12 +54,14 @@ class Request {
 	 * @returns {Request} return this to call other methods.
 	 */
 	config( options ) {
-		if (options.timeout)
+		if ( options.timeout )
 			this.configure.timeout = options.timeout;
-		if (options.encoding) {
-			this.configure.encoding = options.encoding;
-			if ('gb2312' === options.encoding || 'gbk' === options.encoding)
+		this.configure.encoding = options.encoding;
+		switch ( options.encoding ) {
+			case 'gb2312':
+			case 'gbk':
 				this.configure.encodeURIComponent = Request.EncodeURIComponent.gbkEncodeURIComponent;
+				break;
 		}
 		return this;
 	}
@@ -73,7 +75,7 @@ class Request {
 		this.configure.query = data;
 		data = queryString.stringify( data, null, null
 			, { encodeURIComponent: this.configure.encodeURIComponent } );
-		if (this.configure.options.path.indexOf( '?' ) < 0)
+		if ( this.configure.options.path.indexOf( '?' ) < 0 )
 			this.configure.options.path += '?' + data;
 		else // if endsWith('&')
 			this.configure.options.path += '&' + data;
@@ -87,14 +89,14 @@ class Request {
 	 * @returns {Request} return this to call other methods
 	 */
 	send( data ) {
-		if ('GET' === this.configure.options.method)
+		if ( 'GET' === this.configure.options.method )
 			Utils.warning( Utils.strings.warning_send_body_using_get );
 		data = queryString.stringify( data, null, null
 			, { encodeURIComponent: this.configure.encodeURIComponent } );
 		this.configure.data = data;
 		this.configure.contentLength = Buffer.byteLength( data );
-		this.configure.headers[ 'Content-Type' ] = 'application/x-www-form-urlencoded';
-		this.configure.headers[ 'Content-Length' ] = this.configure.contentLength;
+		this.configure.headers['Content-Type'] = 'application/x-www-form-urlencoded';
+		this.configure.headers['Content-Length'] = this.configure.contentLength;
 		return this;
 	}
 
@@ -106,11 +108,11 @@ class Request {
 	 */
 	headers( headers ) {
 		this.configure.headers = headers;
-		if (this.configure.contentLength) {
-			this.configure.headers[ 'Content-Type' ] = 'application/x-www-form-urlencoded';
-			this.configure.headers[ 'Content-Length' ] = this.configure.contentLength;
+		if ( this.configure.contentLength ) {
+			this.configure.headers['Content-Type'] = 'application/x-www-form-urlencoded';
+			this.configure.headers['Content-Length'] = this.configure.contentLength;
 		}
-		this.configure.headers[ 'Host' ] = this.configure.options.host;
+		this.configure.headers['Host'] = this.configure.options.host;
 		return this;
 	}
 
@@ -139,7 +141,15 @@ class Request {
 				callback( err );
 			} );
 			res.on( 'data', function ( part ) {
-				response.body += Utils.toUtf8FromEncoding( part, _this.configure.encoding );
+				if ( _this.configure.encoding ) {
+					response.body += Utils.toUtf8FromEncoding( part, _this.configure.encoding );
+				} else {
+					if ( response.body ) {
+						response.body = Buffer.concat( [response.body, part] );
+					} else {
+						response.body = part;
+					}
+				}
 			} );
 			res.on( 'end', function () {
 				Utils.log( '-------- start of response ---------' );
@@ -148,13 +158,17 @@ class Request {
 				callback( null, response );
 			} );
 		} );
-		if (this.configure.data)
+		if ( this.configure.data )
 			req.write( this.configure.data );
 		req.end();
 		Utils.log( '-------- start of configure ---------' );
 		Utils.log( this.configure );
 		Utils.log( '--------  end of configure  ---------' );
 		return this;
+	}
+
+	end( callback ) {
+		return this.done( callback );
 	}
 }
 /**
@@ -165,10 +179,10 @@ Request.sHeaders = {
 };
 
 Request.config = function ( options ) {
-	if (!options)
+	if ( !options )
 		return;
 	Utils.config( options );
-	if (options.headers)
+	if ( options.headers )
 		Request.sHeaders = options.headers;
 	// TODO merge object
 };
@@ -188,7 +202,7 @@ Request.Encodings = [
 Request.EncodeURIComponent = {
 	gbkEncodeURIComponent: function ( origin ) {
 		var encoding = 'gb2312';
-		if (new RegExp( /[^\x00-\xff]/g ).test( origin ))
+		if ( new RegExp( /[^\x00-\xff]/g ).test( origin ) )
 			return ( Utils.urlEncode( origin, encoding ) );
 		return ( queryString.escape( origin ) );
 	}

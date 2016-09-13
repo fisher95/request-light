@@ -103,3 +103,23 @@ function(err, response){
 
 
 ---
+
+## Details of Usage
+
+### Download binary file.
+
+```js
+Request.get( URL_BINARY_FILE )
+    .config( {
+        encoding: null  // set encoding as null to make the response body is instance of Buffer
+    } )
+    .done( function ( err, res ) {
+        if ( err ) {return console.error( err );}
+        fs.writeFile( FILE_DOWNLOADED, res.body, function ( err ) {
+            if ( err ) {return console.error( err );}
+            console.log( 'Saved file to: ' + FILE_DOWNLOADED );
+        } )
+    } );
+```
+
+---
