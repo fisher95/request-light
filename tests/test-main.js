@@ -21,6 +21,9 @@ var checkConnection = function () {
 	Request.get( 'http://baidu.com/' )
 		.done( function ( err, res ) {
 			if ( err ) {return console.error( err );}
+			console.log( '----------' );
+			console.log( res.status );
+			console.log( '----------' );
 			console.log( res.headers );
 			console.log( '----------' );
 			console.log( res.body );

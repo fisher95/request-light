@@ -29,7 +29,7 @@ class Request {
 			options: {
 				method: options.method || 'GET'
 			},
-			headers: {},
+			headers: Request.sHeaders,
 			data: '',
 			timeout: 6000,
 			contentLength: 0,
@@ -132,7 +132,9 @@ class Request {
 			headers: this.configure.headers
 		}, function ( res ) {
 			var response = {
-				code: res.code,
+				code: res.statusCode,
+				status: res.statusCode,
+				msg: res.statusMessage,
 				headers: res.headers,
 				body: ''
 			};
