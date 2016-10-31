@@ -8,6 +8,7 @@
 'use strict';
 
 const http = require('http');
+const https = require('https');
 const url = require('url');
 const queryString = require('querystring');
 var Utils = require('./request-utils');
@@ -38,6 +39,14 @@ class Request {
 			encodeURIComponent: null
 		};
 		var address = url.parse(options.address);
+		if ('http:' === address.protocol) {
+			this.client = http;
+		} else if ('https:' === address.protocol) {
+			this.client = https;
+		} else {
+			throw 'unsupported protocol: ' + address.protocol;
+		}
+		configure.options.protocol = address.protocol;
 		configure.options.host = address.host;
 		configure.options.hostname = address.hostname;
 		configure.options.port = address.port;
@@ -124,7 +133,7 @@ class Request {
 	 */
 	done(callback) {
 		var _this = this;
-		var req = http.request({
+		var req = _this.client.request({
 			host: _this.configure.options.hostname,
 			port: _this.configure.options.port,
 			path: _this.configure.options.path,
