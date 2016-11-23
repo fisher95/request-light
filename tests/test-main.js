@@ -8,27 +8,24 @@ var Request = require('../request-light');
 var fs = require('fs');
 var URL_BINARY_FILE = 'http://jwc.ecust.edu.cn/picture/article/75/6f/f6/0315a85a49b7bac2fef1cb45744d/baf63b15-87ac-4ce1-a6f2-04e6c3ea4425.xls';
 var FILE_DOWNLOADED = 'baf63b15-87ac-4ce1-a6f2-04e6c3ea4425.xls';
-var URL_SIMPLE_HTTPS = 'https://baidu.com/';
+var URL_SIMPLE_HTTPS = 'https://www.baidu.com/';
+var URL_SIMPLE_HTTP = 'http://jwc.ecust.edu.cn/';
 
 Request.config({
 	debug: false
 });
 
 setTimeout(function () {
-	// checkConnection();
+	simpleHTTP();
 	// downloadFile();
-	simpleHttps();
+	// simpleHttps();
 });
 
-var checkConnection = function () {
-	Request.get('http://baidu.com/')
+var simpleHTTP = function () {
+	Request.get(URL_SIMPLE_HTTP)
 		.done(function (err, res) {
 			if (err) {return console.error(err);}
-			console.log('----------');
-			console.log(res.status);
-			console.log('----------');
-			console.log(res.headers);
-			console.log('----------');
+			console.log(res);
 			console.log(res.body);
 		});
 };
@@ -57,7 +54,7 @@ var simpleHttps = function () {
 	});
 	Request.get(URL_SIMPLE_HTTPS)
 		.done(function (err, res) {
-			if(err){return console.error(err);}
+			if (err) {return console.error(err);}
 			console.log(res);
 		});
 };

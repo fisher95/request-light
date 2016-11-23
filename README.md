@@ -1,4 +1,4 @@
-# request-light | A Light-Weight Http Request library for node.js
+# request-light.js | A Light-Weight Http Request library for node.js
 
 *Under Development Yet* :)
 
@@ -61,19 +61,20 @@ Request
 
 ---
 
-## Init Configure
+## Initialize Configure
 
 Configure to initialize the library with global preferences of all your request by ```Request.config(configure);```.
 
 ```js
-{
+var configure = {
     debug: true,
     timeout: 6000,
     encoding: 'gb2312',
     host: 'google.com',
     method: 'GET',
     path: '/base-path/'
-}
+};
+Request.config(configure);
 ```
 
 ## Request Configure
@@ -81,21 +82,26 @@ Configure to initialize the library with global preferences of all your request 
 Configure to specify a single request by ```Request.post(remote-address).config(configure);```
 
 ```js
-{
+var configure = {
     timeout: 6000,
     encoding: 'gb2312',
     encodings: {
         request: 'gb2312',
         response: 'gb2312'
     }
-}
+};
+Request.config(configure);
 ```
 
 
 ## Callback of request
 
 ```js
-function(err, response){
+var callback = function(err, response){
+    console.log(res.code);
+    console.log(res.status);
+    console.log(res.message);
+    console.log(res.length);
     console.log(res.headers);
     console.log(res.body);
 }
@@ -104,7 +110,7 @@ function(err, response){
 
 ---
 
-## Details of Usage
+## Usage Sample
 
 ### Download binary file.
 
@@ -123,3 +129,15 @@ Request.get( URL_BINARY_FILE )
 ```
 
 ---
+
+## Update Log
+
+- v0.8.6 *2016-11-23*
+    - Added Support to handle multi-byte characters in the hard way. [ref][1]
+    - Added response.length to represent the response body length.
+
+---
+
+
+[1]: https://nodejs.org/api/stream.html#stream_readable_setencoding_encoding "nodejs multi-byte characters solution."
+

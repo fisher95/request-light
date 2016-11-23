@@ -1,6 +1,6 @@
 {
   "name": "request-light.js",
-  "version": "0.8.5",
+  "version": "0.8.6",
   "description": "A light-weight http request library.",
   "main": "request-light.js",
   "scripts": {

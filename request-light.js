@@ -143,7 +143,8 @@ class Request {
 			var response = {
 				code: res.statusCode,
 				status: res.statusCode,
-				msg: res.statusMessage,
+				message: res.statusMessage,
+				length: 0,
 				headers: res.headers,
 				body: ''
 			};
@@ -152,18 +153,20 @@ class Request {
 				callback(err);
 			});
 			res.on('data', function (part) {
-				if (_this.configure.encoding) {
-					response.body += Utils.toUtf8FromEncoding(part, _this.configure.encoding);
+				// Get all the data before convert it to desired encoding.
+				// This could be destroyable when fetching large resource(>>20MB).
+				if (response.body) {
+					response.body = Buffer.concat([response.body, part]);
 				} else {
-					if (response.body) {
-						response.body = Buffer.concat([response.body, part]);
-					} else {
-						response.body = part;
-					}
+					response.body = part;
 				}
 			});
 			res.on('end', function () {
 				Utils.log('-------- start of response ---------');
+				response.length = response.body.length;
+				if (_this.configure.encoding) {
+					response.body = Utils.toUtf8FromEncoding(response.body, _this.configure.encoding);
+				}
 				Utils.log(response);
 				Utils.log('--------  end of response  ---------');
 				callback(null, response);
