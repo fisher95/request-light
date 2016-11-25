@@ -27,8 +27,7 @@ exports.log = function (data) {
 	return data;
 };
 exports.warning = function (data) {
-	if (debug) {console.log(data);}
-	console.warn(data);
+	if (debug) {console.warn(data);}
 	return data;
 };
 

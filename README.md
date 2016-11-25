@@ -66,31 +66,44 @@ Request
 Configure to initialize the library with global preferences of all your request by ```Request.config(configure);```.
 
 ```js
-var configure = {
+Request.config({
     debug: true,
     timeout: 6000,
     encoding: 'gb2312',
     host: 'google.com',
     method: 'GET',
     path: '/base-path/'
-};
-Request.config(configure);
+});
 ```
-
-## Request Configure
 
 Configure to specify a single request by ```Request.post(remote-address).config(configure);```
 
 ```js
-var configure = {
+var url = 'http://google.com/';
+Request.post(url)
+    .query({
+    	hello: 'world'
+    })
+    .config({
+        timeout: 6000,
+        encoding: 'gb2312',
+        encodings: {
+            request: 'gb2312',
+            response: 'gb2312'
+        }
+    });
+```
+
+Configure retry when timeout globally. *(Only retry when timeout)*
+
+```js
+Request.config({
+    debug: true,
     timeout: 6000,
-    encoding: 'gb2312',
-    encodings: {
-        request: 'gb2312',
-        response: 'gb2312'
-    }
-};
-Request.config(configure);
+    retry: true,            // Whether retry (only) when timeout.
+    retryMaxTime: 3000,     // Retry timeout is 3000.
+    retryMaxTimes: 5        // At most  5  request will be sent.
+});
 ```
 
 
@@ -140,4 +153,5 @@ Request.get( URL_BINARY_FILE )
 
 
 [1]: https://nodejs.org/api/stream.html#stream_readable_setencoding_encoding "nodejs multi-byte characters solution."
+
 

@@ -9,15 +9,17 @@ var fs = require('fs');
 var URL_BINARY_FILE = 'http://jwc.ecust.edu.cn/_upload/article/files/5c/97/3529bbd543a9bdf6bd4428445663/161a211e-d747-4599-aafe-ccd959c16b05.doc';
 var FILE_DOWNLOADED = 'baf63b15-87ac-4ce1-a6f2-04e6c3ea4425.xls';
 var URL_SIMPLE_HTTPS = 'https://www.baidu.com/';
-var URL_SIMPLE_HTTP = 'http://lovecust.com:30123/hello';
+var URL_SIMPLE_HTTP = 'http://lovecust.com:3000/hello';
 var URL_ECUST_JWC = 'http://jwc.ecust.edu.cn/';
 
 Request.config({
-	debug: false,
-	timeout: 1000,
+	debug: true,
+	timeout: 10,
 	headers: {
 		'Fine': 'Okay'
-	}
+	},
+	retryMaxTimes: 2,
+	retryMaxTime: 100
 });
 
 setTimeout(function () {

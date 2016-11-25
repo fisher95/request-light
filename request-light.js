@@ -18,12 +18,16 @@ const Constants = require('./constants');
 /**
  * Base request configure.
  */
-let baseConfigure = {
+let basePreference = {
+	options: {},
 	headers: {
 		'User-Agent': Constants.HEADER_USER_AGNENT_DEFAULT
 	},
 	encoding: Constants.ENCODING_DEFAULT,
-	timeout: Constants.TIME_DEFAULT_TIMEOUT
+	timeout: Constants.TIME_DEFAULT_TIMEOUT,
+	retry: true, // Retry only when timeout.
+	retryMaxTimes: 3,// Max retry times.
+	retryMaxTime: 10000 // Retry timeout in milliseconds.
 };
 
 class Request {
@@ -39,16 +43,7 @@ class Request {
 		 * Options about this request
 		 * @type {{options: {method: ('GET'|'POST'|'DELETE')}, headers: {}, data: string, timeout: number, contentLength: number, encoding: string}}
 		 */
-		let configure = {
-			options: {
-				method: options.method || 'GET'
-			},
-			headers: extend({}, baseConfigure.headers),
-			data: '',
-			timeout: baseConfigure.timeout,
-			contentLength: 0,
-			encoding: baseConfigure.encoding
-		};
+		let preference = extend(true, {}, basePreference);
 		let address = url.parse(options.address);
 		if ('http:' === address.protocol) {
 			this.client = http;
@@ -57,13 +52,13 @@ class Request {
 		} else {
 			throw 'unsupported protocol: ' + address.protocol;
 		}
-		configure.options.protocol = address.protocol;
-		configure.options.host = address.host;
-		configure.options.hostname = address.hostname;
-		configure.options.port = address.port;
-		configure.options.path = address.path;
-		configure.headers['Host'] = configure.options.host;
-		this.configure = configure;
+		preference.options.protocol = address.protocol;
+		preference.options.host = address.host;
+		preference.options.hostname = address.hostname;
+		preference.options.port = address.port;
+		preference.options.path = address.path;
+		preference.headers['Host'] = preference.options.host;
+		this.preference = preference;
 	}
 
 	/**
@@ -75,7 +70,7 @@ class Request {
 	 * @returns {Request} return this to call other methods.
 	 */
 	config(options) {
-		if (options) {extend(true, this.configure, options);}
+		if (options) {extend(true, this.preference, options);}
 		return this;
 	}
 
@@ -85,14 +80,14 @@ class Request {
 	 * @param data json data to be query
 	 */
 	query(data) {
-		this.configure.query = data;
+		this.preference.query = data;
 		data = queryString.stringify(data, null, null
-			, {encodeURIComponent: Utils.getEncodeURIComponent(this.configure.encoding)});
-		if (this.configure.options.path.indexOf('?') < 0) {
-			this.configure.options.path += '?' + data;
+			, {encodeURIComponent: Utils.getEncodeURIComponent(this.preference.encoding)});
+		if (this.preference.options.path.indexOf('?') < 0) {
+			this.preference.options.path += '?' + data;
 		} else {
 			// if endsWith('&')
-			this.configure.options.path += '&' + data;
+			this.preference.options.path += '&' + data;
 		}
 		return this;
 	}
@@ -106,13 +101,13 @@ class Request {
 	 * @returns {Request} return this to call other methods
 	 */
 	send(data) {
-		if ('GET' === this.configure.options.method) {Utils.warning(Utils.strings.warning_send_body_using_get);}
+		if ('GET' === this.preference.options.method) {Utils.warning(Utils.strings.warning_send_body_using_get);}
 		data = queryString.stringify(data, null, null
-			, {encodeURIComponent: Utils.getEncodeURIComponent(this.configure.encoding)});
-		this.configure.data = data;
-		this.configure.contentLength = Buffer.byteLength(data);
-		this.configure.headers['Content-Type'] = 'application/x-www-form-urlencoded';
-		this.configure.headers['Content-Length'] = this.configure.contentLength;
+			, {encodeURIComponent: Utils.getEncodeURIComponent(this.preference.encoding)});
+		this.preference.data = data;
+		this.preference.contentLength = Buffer.byteLength(data);
+		this.preference.headers['Content-Type'] = 'application/x-www-form-urlencoded';
+		this.preference.headers['Content-Length'] = this.preference.contentLength;
 		return this;
 	}
 
@@ -124,27 +119,27 @@ class Request {
 	 */
 	headers(headers) {
 		if (!headers) {return;}
-		extend(true, this.configure.headers, headers);
+		extend(true, this.preference.headers, headers);
 		return this;
 	}
 
 	/**
-	 * The callback
+	 * Send request to fetch resources.
 	 *
 	 * @param callback function Callback function that will be called when encountered an error or the request is done
 	 * @returns {Request} return this to call other function
 	 */
-	done(callback) {
+	_sendRequest(callback) {
 		let _this = this;
 		let isRequestTimeout = false;
-		let isResponseTimeout = false;
+		// let isResponseTimeout = false;
 		let req = _this.client.request({
-			host: _this.configure.options.hostname,
-			port: _this.configure.options.port,
-			path: _this.configure.options.path,
-			method: _this.configure.options.method,
-			headers: _this.configure.headers,
-			timeout: _this.configure.timeout
+			host: _this.preference.options.hostname,
+			port: _this.preference.options.port,
+			path: _this.preference.options.path,
+			method: _this.preference.options.method,
+			headers: _this.preference.headers,
+			timeout: _this.preference.timeout
 		});
 		req.on('response', function (res) {
 			let response = {
@@ -155,7 +150,7 @@ class Request {
 				headers: res.headers,
 				body: ''
 			};
-			res.setTimeout(_this.configure.timeout);
+			res.setTimeout(_this.preference.timeout);
 			// res.setTimeout(1, function () { // It did not work.
 			// isResponseTimeout = true;
 			// 	console.error('timeoutttttttttttttttttttttttttt');
@@ -179,8 +174,8 @@ class Request {
 				Utils.log(`All together got response[${response.body.length}].`);
 				Utils.log('-------- start of response ---------');
 				response.length = response.body.length;
-				if (_this.configure.encoding) {
-					response.body = Utils.toUtf8FromEncoding(response.body, _this.configure.encoding);
+				if (_this.preference.encoding) {
+					response.body = Utils.toUtf8FromEncoding(response.body, _this.preference.encoding);
 				}
 				Utils.log(response);
 				Utils.log('--------  end of response  ---------');
@@ -192,14 +187,50 @@ class Request {
 			req.abort();
 		});
 		req.on('error', function (err) {
-			if (isRequestTimeout && err) {return callback(['request timeout :( ', err]);}
+			if (isRequestTimeout && err) {return callback(new Error(Constants.ERROR_CONNECTOIN_TIMEOUT));}
 			callback(err);
 		});
-		if (_this.configure.data) {req.write(_this.configure.data);}
+		if (_this.preference.data) {req.write(_this.preference.data);}
 		req.end();
 		Utils.log('-------- start of configure ---------');
-		Utils.log(this.configure);
+		Utils.log(this.preference);
 		Utils.log('--------  end of configure  ---------');
+		return this;
+	}
+
+	done(callback) {
+		if (!this.preference.retry) {
+			return this._sendRequest(callback);
+		}
+		let _this = this;
+		let retryDeadline = this.preference.retryMaxTime + (+new Date());
+		let retryLeftTimes = this.preference.retryMaxTimes;
+
+		let goForIt = function (err) {
+			--retryLeftTimes;
+			if (err) {
+				Utils.log(`Retrying[${retryLeftTimes}] the resource.`);
+			} else {
+				Utils.log(`Trying[${retryLeftTimes}] the resource.`);
+			}
+			_this._sendRequest(retryIt);
+		};
+		let retryIt = function (err, response) {
+			if (err && Constants.ERROR_CONNECTOIN_TIMEOUT === err.message) {
+				if (0 === retryLeftTimes) {
+					Utils.warning(`:>>> $ Stop retrying because retryMaxTimes was due. Failed [${_this.preference.retryMaxTimes}] times.`);
+					return callback(err);
+				}
+				if (retryDeadline < (+new Date())) {
+					Utils.warning(`:>>> $ Stop retrying because retryMaxTime was due. Failed [${_this.preference.retryMaxTimes - retryLeftTimes}] times.`);
+					return callback(err);
+				}
+				return goForIt(err);
+			}
+			if (err) {return callback(err);}
+			callback(null, response);
+		};
+		goForIt();
 		return this;
 	}
 
@@ -211,7 +242,7 @@ class Request {
 Request.config = function (options) {
 	if (!options) {return;}
 	Utils.config(options);
-	extend(true, baseConfigure, options);
+	extend(true, basePreference, options);
 };
 
 /**

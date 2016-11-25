@@ -45,3 +45,8 @@ exports.HEADER_USER_AGNENT = 'User-Agent';
  */
 exports.HEADER_USER_AGNENT_DEFAULT = 'Mozilla/5.0 (Linux) Chrome';
 
+/**
+ * Connection timeout.
+ */
+exports.ERROR_CONNECTOIN_TIMEOUT = 'ETIMEDOUT';
+
