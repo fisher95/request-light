@@ -136,6 +136,8 @@ class Request {
 	 */
 	done(callback) {
 		let _this = this;
+		let isRequestTimeout = false;
+		let isResponseTimeout = false;
 		let req = _this.client.request({
 			host: _this.configure.options.hostname,
 			port: _this.configure.options.port,
@@ -143,7 +145,8 @@ class Request {
 			method: _this.configure.options.method,
 			headers: _this.configure.headers,
 			timeout: _this.configure.timeout
-		}, function (res) {
+		});
+		req.on('response', function (res) {
 			let response = {
 				code: res.statusCode,
 				status: res.statusCode,
@@ -153,6 +156,11 @@ class Request {
 				body: ''
 			};
 			res.setTimeout(_this.configure.timeout);
+			// res.setTimeout(1, function () { // It did not work.
+			// isResponseTimeout = true;
+			// 	console.error('timeoutttttttttttttttttttttttttt');
+			// 	callback('timeouttttttttttttttttttttttttttttttt');
+			// });
 			res.on('error', function (err) {
 				callback(err);
 			});
@@ -178,6 +186,14 @@ class Request {
 				Utils.log('--------  end of response  ---------');
 				callback(null, response);
 			});
+		});
+		req.on('timeout', function () {
+			isRequestTimeout = true;
+			req.abort();
+		});
+		req.on('error', function (err) {
+			if (isRequestTimeout && err) {return callback(['request timeout :( ', err]);}
+			callback(err);
 		});
 		if (_this.configure.data) {req.write(_this.configure.data);}
 		req.end();
