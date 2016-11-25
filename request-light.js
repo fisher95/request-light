@@ -161,11 +161,14 @@ class Request {
 				// This could be destroyable when fetching large resource(>>20MB).
 				if (response.body) {
 					response.body = Buffer.concat([response.body, part]);
+					Utils.log(`Got some response[${part.length}].`);
 				} else {
 					response.body = part;
+					Utils.log(`Got response[${part.length}] from server.`);
 				}
 			});
 			res.on('end', function () {
+				Utils.log(`All together got response[${response.body.length}].`);
 				Utils.log('-------- start of response ---------');
 				response.length = response.body.length;
 				if (_this.configure.encoding) {
