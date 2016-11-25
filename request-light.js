@@ -139,7 +139,8 @@ class Request {
 			port: _this.configure.options.port,
 			path: _this.configure.options.path,
 			method: _this.configure.options.method,
-			headers: _this.configure.headers
+			headers: _this.configure.headers,
+			timeout: _this.configure.timeout
 		}, function (res) {
 			let response = {
 				code: res.statusCode,
@@ -149,7 +150,7 @@ class Request {
 				headers: res.headers,
 				body: ''
 			};
-			res.setTimeout(_this.configure.timeout);
+			// res.setTimeout(_this.configure.timeout);
 			res.on('error', function (err) {
 				callback(err);
 			});
@@ -195,7 +196,7 @@ Request.sHeaders = {
 Request.config = function (options) {
 	if (!options) {return;}
 	Utils.config(options);
-	if (options.headers) {extend(Request.sHeaders, options.headers);}
+	extend(Request.sHeaders, options.headers);
 };
 /**
  * supported encodings
