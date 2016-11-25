@@ -18,8 +18,11 @@ Request.config({
 	headers: {
 		'Fine': 'Okay'
 	},
-	retryMaxTimes: 2,
-	retryMaxTime: 100
+	retryMaxTimes: 3,
+	retryMaxTime: 100,
+	retryCallback: function (warning) {
+		console.warn(warning);
+	}
 });
 
 setTimeout(function () {

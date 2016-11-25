@@ -30,7 +30,7 @@ exports.ENCODINGS = [
 ];
 
 /**
- * Default timeout of requeest and response is 6 seconds.
+ * Default timeout of request and response is 6 seconds.
  * @type {number} Time in milliseconds.
  */
 exports.TIME_DEFAULT_TIMEOUT = 6000;
@@ -49,4 +49,20 @@ exports.HEADER_USER_AGNENT_DEFAULT = 'Mozilla/5.0 (Linux) Chrome';
  * Connection timeout.
  */
 exports.ERROR_CONNECTOIN_TIMEOUT = 'ETIMEDOUT';
+
+/**
+ * Default timeout of retry. (200 seconds)
+ * @type {number} Time in milliseconds.
+ */
+exports.RETRY_TIMEOUT = 200000;
+
+
+/**
+ * Default retry time.
+ * @type {number} Retry repeat times.
+ */
+exports.RETRY_TIMES = 3;
+
+
+
 

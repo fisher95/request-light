@@ -26,16 +26,19 @@ let basePreference = {
 	encoding: Constants.ENCODING_DEFAULT,
 	timeout: Constants.TIME_DEFAULT_TIMEOUT,
 	retry: true, // Retry only when timeout.
-	retryMaxTimes: 3,// Max retry times.
-	retryMaxTime: 10000 // Retry timeout in milliseconds.
+	retryMaxTimes: Constants.RETRY_TIMES,// Max retry times.
+	retryMaxTime: Constants.RETRY_TIMEOUT, // Retry timeout in milliseconds.
+	retryCallback: function (info) {
+		Utils.log(info);
+	}
 };
 
 class Request {
 	/**
 	 * Initialize a specific http request
 	 *
-	 * @param options necessary info to be specified
-	 * @param options.address http request adress
+	 * @param options{Object} necessary info to be specified
+	 * @param options.address http request address.
 	 * @param options.method http request method. [ 'GET' | 'POST' ]
 	 */
 	constructor(options) {
@@ -44,6 +47,7 @@ class Request {
 		 * @type {{options: {method: ('GET'|'POST'|'DELETE')}, headers: {}, data: string, timeout: number, contentLength: number, encoding: string}}
 		 */
 		let preference = extend(true, {}, basePreference);
+		extend(true, preference.options, options);
 		let address = url.parse(options.address);
 		if ('http:' === address.protocol) {
 			this.client = http;
@@ -203,26 +207,29 @@ class Request {
 			return this._sendRequest(callback);
 		}
 		let _this = this;
+		const retryMaxTime = this.preference.retryMaxTime + (+new Date());
+		const retryMaxTimes = this.preference.retryMaxTimes;
 		let retryDeadline = this.preference.retryMaxTime + (+new Date());
 		let retryLeftTimes = this.preference.retryMaxTimes;
+		const retryCallback = this.preference.retryCallback;
 
 		let goForIt = function (err) {
 			--retryLeftTimes;
 			if (err) {
-				Utils.log(`Retrying[${retryLeftTimes}] the resource.`);
+				retryCallback([`Retrying[${retryMaxTimes}-${retryLeftTimes}] the resource: ${_this.preference.options.address}.`, err]);
 			} else {
-				Utils.log(`Trying[${retryLeftTimes}] the resource.`);
+				Utils.log(`Trying[${retryMaxTimes}-${retryLeftTimes}] the resource: ${_this.preference.options.address}.`);
 			}
 			_this._sendRequest(retryIt);
 		};
 		let retryIt = function (err, response) {
 			if (err && Constants.ERROR_CONNECTOIN_TIMEOUT === err.message) {
 				if (0 === retryLeftTimes) {
-					Utils.warning(`:>>> $ Stop retrying because retryMaxTimes was due. Failed [${_this.preference.retryMaxTimes}] times.`);
+					retryCallback(`:>>> $ Stop retrying: ${_this.preference.options.address} because retryMaxTimes was due. Failed [${retryMaxTimes}] times.`);
 					return callback(err);
 				}
 				if (retryDeadline < (+new Date())) {
-					Utils.warning(`:>>> $ Stop retrying because retryMaxTime was due. Failed [${_this.preference.retryMaxTimes - retryLeftTimes}] times.`);
+					retryCallback(`:>>> $ Stop retrying: ${_this.preference.options.address} because retryMaxTime was due. Failed [${retryMaxTimes - retryLeftTimes}] times.`);
 					return callback(err);
 				}
 				return goForIt(err);
