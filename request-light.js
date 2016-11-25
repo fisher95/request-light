@@ -9,9 +9,10 @@
 
 const http = require('http');
 const https = require('https');
+const extend = require('extend');
 const url = require('url');
 const queryString = require('querystring');
-var Utils = require('./request-utils');
+const Utils = require('./request-utils');
 
 class Request {
 	/**
@@ -26,7 +27,7 @@ class Request {
 		 * Options about this request
 		 * @type {{options: {method: ('GET'|'POST'|'DELETE')}, headers: {}, data: string, timeout: number, contentLength: number, encoding: string, encodeURIComponent: null}}
 		 */
-		var configure = {
+		let configure = {
 			options: {
 				method: options.method || 'GET'
 			},
@@ -38,7 +39,7 @@ class Request {
 			// to encode form data
 			encodeURIComponent: null
 		};
-		var address = url.parse(options.address);
+		let address = url.parse(options.address);
 		if ('http:' === address.protocol) {
 			this.client = http;
 		} else if ('https:' === address.protocol) {
@@ -132,15 +133,15 @@ class Request {
 	 * @returns {Request} return this to call other function
 	 */
 	done(callback) {
-		var _this = this;
-		var req = _this.client.request({
+		let _this = this;
+		let req = _this.client.request({
 			host: _this.configure.options.hostname,
 			port: _this.configure.options.port,
 			path: _this.configure.options.path,
 			method: _this.configure.options.method,
 			headers: _this.configure.headers
 		}, function (res) {
-			var response = {
+			let response = {
 				code: res.statusCode,
 				status: res.statusCode,
 				message: res.statusMessage,
@@ -194,8 +195,7 @@ Request.sHeaders = {
 Request.config = function (options) {
 	if (!options) {return;}
 	Utils.config(options);
-	if (options.headers) {Request.sHeaders = options.headers;}
-	// TODO merge object
+	if (options.headers) {extend(Request.sHeaders, options.headers);}
 };
 /**
  * supported encodings
