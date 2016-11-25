@@ -12,7 +12,19 @@ const https = require('https');
 const extend = require('extend');
 const url = require('url');
 const queryString = require('querystring');
-const Utils = require('./request-utils');
+const Utils = require('./utils');
+const Constants = require('./constants');
+
+/**
+ * Base request configure.
+ */
+let baseConfigure = {
+	headers: {
+		'User-Agent': Constants.HEADER_USER_AGNENT_DEFAULT
+	},
+	encoding: Constants.ENCODING_DEFAULT,
+	timeout: Constants.TIME_DEFAULT_TIMEOUT
+};
 
 class Request {
 	/**
@@ -25,19 +37,17 @@ class Request {
 	constructor(options) {
 		/**
 		 * Options about this request
-		 * @type {{options: {method: ('GET'|'POST'|'DELETE')}, headers: {}, data: string, timeout: number, contentLength: number, encoding: string, encodeURIComponent: null}}
+		 * @type {{options: {method: ('GET'|'POST'|'DELETE')}, headers: {}, data: string, timeout: number, contentLength: number, encoding: string}}
 		 */
 		let configure = {
 			options: {
 				method: options.method || 'GET'
 			},
-			headers: Request.sHeaders,
+			headers: extend({}, baseConfigure.headers),
 			data: '',
-			timeout: 6000,
+			timeout: baseConfigure.timeout,
 			contentLength: 0,
-			encoding: 'utf8',
-			// to encode form data
-			encodeURIComponent: null
+			encoding: baseConfigure.encoding
 		};
 		let address = url.parse(options.address);
 		if ('http:' === address.protocol) {
@@ -52,6 +62,7 @@ class Request {
 		configure.options.hostname = address.hostname;
 		configure.options.port = address.port;
 		configure.options.path = address.path;
+		configure.headers['Host'] = configure.options.host;
 		this.configure = configure;
 	}
 
@@ -64,14 +75,7 @@ class Request {
 	 * @returns {Request} return this to call other methods.
 	 */
 	config(options) {
-		if (options.timeout) {this.configure.timeout = options.timeout;}
-		this.configure.encoding = options.encoding;
-		switch (options.encoding) {
-			case 'gb2312':
-			case 'gbk':
-				this.configure.encodeURIComponent = Request.EncodeURIComponent.gbkEncodeURIComponent;
-				break;
-		}
+		if (options) {extend(true, this.configure, options);}
 		return this;
 	}
 
@@ -83,7 +87,7 @@ class Request {
 	query(data) {
 		this.configure.query = data;
 		data = queryString.stringify(data, null, null
-			, {encodeURIComponent: this.configure.encodeURIComponent});
+			, {encodeURIComponent: Utils.getEncodeURIComponent(this.configure.encoding)});
 		if (this.configure.options.path.indexOf('?') < 0) {
 			this.configure.options.path += '?' + data;
 		} else {
@@ -94,7 +98,9 @@ class Request {
 	}
 
 	/**
-	 * Send data to server; Now using url-encoded // TODO support others
+	 * Send data to server; Now using url-encoded.
+	 *
+	 *      TODO support others
 	 *
 	 * @param data json data to be send
 	 * @returns {Request} return this to call other methods
@@ -102,7 +108,7 @@ class Request {
 	send(data) {
 		if ('GET' === this.configure.options.method) {Utils.warning(Utils.strings.warning_send_body_using_get);}
 		data = queryString.stringify(data, null, null
-			, {encodeURIComponent: this.configure.encodeURIComponent});
+			, {encodeURIComponent: Utils.getEncodeURIComponent(this.configure.encoding)});
 		this.configure.data = data;
 		this.configure.contentLength = Buffer.byteLength(data);
 		this.configure.headers['Content-Type'] = 'application/x-www-form-urlencoded';
@@ -113,16 +119,12 @@ class Request {
 	/**
 	 * send the specific headers
 	 *
-	 * @param headers json headers to be specified
+	 * @param headers{Object} headers to be specified
 	 * @returns {Request}
 	 */
 	headers(headers) {
-		this.configure.headers = headers;
-		if (this.configure.contentLength) {
-			this.configure.headers['Content-Type'] = 'application/x-www-form-urlencoded';
-			this.configure.headers['Content-Length'] = this.configure.contentLength;
-		}
-		this.configure.headers['Host'] = this.configure.options.host;
+		if (!headers) {return;}
+		extend(true, this.configure.headers, headers);
 		return this;
 	}
 
@@ -150,7 +152,7 @@ class Request {
 				headers: res.headers,
 				body: ''
 			};
-			// res.setTimeout(_this.configure.timeout);
+			res.setTimeout(_this.configure.timeout);
 			res.on('error', function (err) {
 				callback(err);
 			});
@@ -186,38 +188,19 @@ class Request {
 		return this.done(callback);
 	}
 }
-/**
- * Base http header
- */
-Request.sHeaders = {
-	'User-Agent': 'Mozilla/5.0 (Linux;) Chrome'
-};
 
 Request.config = function (options) {
 	if (!options) {return;}
 	Utils.config(options);
-	extend(Request.sHeaders, options.headers);
+	extend(true, baseConfigure, options);
 };
+
 /**
- * supported encodings
- *
- * @type {string[]} array stores supported encodings in lowercase string
+ * Supported encodings.
  */
-Request.Encodings = [
-	'utf8', 'gb2312'
-];
-/**
- * form data encoding methods
- *
- * @type gbkEncodeURIComponent: to encode chinese using encoding: gb2312
- */
-Request.EncodeURIComponent = {
-	gbkEncodeURIComponent: function (origin) {
-		var encoding = 'gb2312';
-		if (new RegExp(/[^\x00-\xff]/g).test(origin)) {return ( Utils.urlEncode(origin, encoding) );}
-		return ( queryString.escape(origin) );
-	}
-};
+Request.ENCODINGS = Constants.ENCODINGS;
+
+
 /**
  * start a new post request
  *

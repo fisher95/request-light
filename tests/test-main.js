@@ -6,23 +6,38 @@
 
 var Request = require('../request-light');
 var fs = require('fs');
-var URL_BINARY_FILE = 'http://jwc.ecust.edu.cn/picture/article/75/6f/f6/0315a85a49b7bac2fef1cb45744d/baf63b15-87ac-4ce1-a6f2-04e6c3ea4425.xls';
+var URL_BINARY_FILE = 'http://jwc.ecust.edu.cn/_upload/article/files/5c/97/3529bbd543a9bdf6bd4428445663/161a211e-d747-4599-aafe-ccd959c16b05.doc';
 var FILE_DOWNLOADED = 'baf63b15-87ac-4ce1-a6f2-04e6c3ea4425.xls';
 var URL_SIMPLE_HTTPS = 'https://www.baidu.com/';
-var URL_SIMPLE_HTTP = 'http://jwc.ecust.edu.cn/';
+var URL_SIMPLE_HTTP = 'http://lovecust.com:30123/hello';
+var URL_ECUST_JWC = 'http://jwc.ecust.edu.cn/';
 
 Request.config({
-	debug: false
+	debug: false,
+	timeout: 1000,
+	headers: {
+		'Fine': 'Okay'
+	}
 });
 
 setTimeout(function () {
 	simpleHTTP();
-	// downloadFile();
-	// simpleHttps();
+	ecustJwc();
+	downloadFile();
+	simpleHttps();
 });
 
+/**
+ * Simple http request.
+ */
 var simpleHTTP = function () {
 	Request.get(URL_SIMPLE_HTTP)
+		.headers({
+			'Whatever': 'xxxxxxxxxxxxxxxxxxxxx'
+		})
+		.query({
+			myFavouriteColour: 'purple'
+		})
 		.done(function (err, res) {
 			if (err) {return console.error(err);}
 			console.log(res);
@@ -30,6 +45,17 @@ var simpleHTTP = function () {
 		});
 };
 
+/**
+ * Fetch ecust jwc homepage.
+ */
+var ecustJwc = function () {
+	Request.get(URL_ECUST_JWC)
+		.done(function (err, res) {
+			if (err) {return console.error(err);}
+			console.log(res);
+			console.log(res.body);
+		});
+};
 
 /**
  * Download binary file.
